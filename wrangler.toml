@@ -14,6 +14,10 @@ compatibility_date = "2023-12-18"
 # binding = "MY_KV_NAMESPACE"
 # id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
+kv_namespaces = [
+    { binding = "vue_example_store", id = "ed49412501b44c73b6f19418854330c2" }
+]
+
 # Bind an R2 Bucket. Use R2 to store arbitrarily large blobs of data, such as files.
 # Docs: https://developers.cloudflare.com/r2/api/workers/workers-api-usage/
 # [[r2_buckets]]

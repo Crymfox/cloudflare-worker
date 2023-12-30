@@ -10,7 +10,7 @@
 
 export interface Env {
 	// Example binding to KV. Learn more at https://developers.cloudflare.com/workers/runtime-apis/kv/
-	// MY_KV_NAMESPACE: KVNamespace;
+	vue_example_store: KVNamespace;
 	//
 	// Example binding to Durable Object. Learn more at https://developers.cloudflare.com/workers/runtime-apis/durable-objects/
 	// MY_DURABLE_OBJECT: DurableObjectNamespace;
@@ -26,7 +26,34 @@ export interface Env {
 }
 
 export default {
-	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-		return new Response('Hello World!');
+	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response | void> {
+		return await handleRequest(request, env, ctx).catch((err) => {
+			new Response(err.stack || err, { status: 500 });
+		});
 	},
 };
+
+async function handleRequest(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+	const url = new URL(request.url);
+	const path = url.pathname;
+
+	if (path === "/") {
+		// connect to KV
+		const store = env.vue_example_store;
+		// get all values from KV
+		const values = await store.list();
+		// return a JSON response
+		return new Response(JSON.stringify(values));
+		
+		// return new Response("Hello world!");
+	} else if (path === "/put") {
+		// put a value from request body to KV
+		const store = env.vue_example_store;
+		const body = await request.text();
+		const value = JSON.parse(body);
+		await store.put(value.key, value.value);
+		return new Response("OK");
+	} else {
+		return new Response("Not found", { status: 404 });
+	}
+}
