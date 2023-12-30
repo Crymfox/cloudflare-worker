@@ -48,9 +48,9 @@ async function handleRequest(request: Request, env: Env, ctx: ExecutionContext):
 		// return new Response("Hello world!");
 	} else if (path === "/put") {
 		// put a value from request body to KV
-		const store = env.vue_example_store;
 		const body = await request.text();
 		const value = JSON.parse(body);
+		const store = env.vue_example_store;
 		await store.put(value.key, value.value);
 		return new Response("OK");
 	} else {
