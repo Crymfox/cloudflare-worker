@@ -40,19 +40,23 @@ async function handleRequest(request: Request, env: Env, ctx: ExecutionContext):
 	if (path === "/") {
 		// connect to KV
 		const store = env.vue_example_store;
-		// get all values from KV
-		const values = await store.list();
+		// get all keys and values from KV
+		const keys = await store.list();
+		const values = await Promise.all(keys.keys.map(async (key) => {
+			return {
+				key: key.name,
+				value: await store.get(key.name),
+			};
+		}));
 		// return a JSON response
 		return new Response(JSON.stringify(values));
 		
 		// return new Response("Hello world!");
 	} else if (path === "/put") {
-		// put a value from request body to KV
-		const body = await request.text();
-		const value = JSON.parse(body);
+		const value = await request.json() as { key: string, value: string };
 		const store = env.vue_example_store;
 		await store.put(value.key, value.value);
-		return new Response("OK");
+		return new Response(value.key + " " + value.value);
 	} else {
 		return new Response("Not found", { status: 404 });
 	}
