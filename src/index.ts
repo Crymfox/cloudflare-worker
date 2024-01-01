@@ -27,9 +27,16 @@ export interface Env {
 
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response | void> {
-		return await handleRequest(request, env, ctx).catch((err) => {
-			new Response(err.stack || err, { status: 500 });
-		});
+		if (request.method === 'OPTIONS') {
+			// Handle OPTIONS request
+			return handleOptions(request);
+		} else {
+			// Handle other requests
+			return await handleRequest(request, env, ctx).catch((err) => {
+				console.error(err);
+				return new Response(err.stack || err, { status: 500 });
+			});
+		}
 	},
 };
 
@@ -59,7 +66,7 @@ async function handleRequest(request: Request, env: Env, ctx: ExecutionContext):
 		});
 		
 		// return new Response("Hello world!");
-	} else if (path === "/put") {
+	} else if (path === "/put" && request.method === "PUT") {
 		const value = await request.json() as { key: string, value: string };
 		const store = env.vue_example_store;
 		await store.put(value.key, value.value);
@@ -74,3 +81,13 @@ async function handleRequest(request: Request, env: Env, ctx: ExecutionContext):
 		return new Response("Not found", { status: 404 });
 	}
 }
+
+function handleOptions(request: Request): Response {
+	return new Response(null, {
+	  headers: {
+		'Access-Control-Allow-Origin': '*',
+		'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+		'Access-Control-Allow-Headers': '*',
+	  },
+	});
+  }
