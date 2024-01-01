@@ -33,6 +33,7 @@ export default {
 	},
 };
 
+
 async function handleRequest(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
 	const url = new URL(request.url);
 	const path = url.pathname;
@@ -49,14 +50,26 @@ async function handleRequest(request: Request, env: Env, ctx: ExecutionContext):
 			};
 		}));
 		// return a JSON response
-		return new Response(JSON.stringify(values));
+		return new Response(JSON.stringify(values), {
+			headers: {
+				'Access-Control-Allow-Origin': '*',
+				'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+				'Access-Control-Allow-Headers': '*',
+			}
+		});
 		
 		// return new Response("Hello world!");
 	} else if (path === "/put") {
 		const value = await request.json() as { key: string, value: string };
 		const store = env.vue_example_store;
 		await store.put(value.key, value.value);
-		return new Response(value.key + " " + value.value);
+		return new Response(value.key + " " + value.value, {
+			headers: {
+				'Access-Control-Allow-Origin': '*',
+				'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+				'Access-Control-Allow-Headers': '*',
+			}
+		});
 	} else {
 		return new Response("Not found", { status: 404 });
 	}
