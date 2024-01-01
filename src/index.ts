@@ -102,7 +102,7 @@ async function handleRequest(request: Request, env: Env, ctx: ExecutionContext):
 		// Handle standard OPTIONS request.
 		return new Response(null, {
 			headers: {
-				Allow: 'GET, HEAD, POST, OPTIONS',
+				Allow: 'GET, HEAD, POST, OPTIONS, PUT, DELETE',
 			},
 		});
 	}
