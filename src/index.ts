@@ -65,11 +65,11 @@ async function handleRequest(request: Request, env: Env, ctx: ExecutionContext):
 			}
 		});
 		
-		// return new Response("Hello world!");
-	} else if (path === "/put" && request.method === "PUT") {
+	} else if (path === "/post" && request.method === "POST") {
 		const value = await request.json() as { key: string, value: string };
 		const store = env.vue_example_store;
 		await store.put(value.key, value.value);
+
 		return new Response(value.key + " " + value.value, {
 			headers: {
 				'Access-Control-Allow-Origin': '*',
@@ -77,6 +77,35 @@ async function handleRequest(request: Request, env: Env, ctx: ExecutionContext):
 				'Access-Control-Allow-Headers': '*',
 			}
 		});
+
+	} else if (path === "/delete" && request.method === "DELETE") {
+		const value = await request.json() as { key: string };
+		const store = env.vue_example_store;
+		await store.delete(value.key);
+		
+		return new Response(value.key, {
+			headers: {
+				'Access-Control-Allow-Origin': '*',
+				'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+				'Access-Control-Allow-Headers': '*',
+			}
+		});
+
+	} else if (path === "/deleteAll" && request.method === "DELETE") {
+		const store = env.vue_example_store;
+		const keys = await store.list();
+		await Promise.all(keys.keys.map(async (key) => {
+			await store.delete(key.name);
+		}));
+		
+		return new Response("All keys deleted", {
+			headers: {
+				'Access-Control-Allow-Origin': '*',
+				'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+				'Access-Control-Allow-Headers': '*',
+			}
+		});
+		
 	} else {
 		return new Response("Not found", { status: 404 });
 	}
@@ -90,6 +119,19 @@ async function handleRequest(request: Request, env: Env, ctx: ExecutionContext):
 		request.headers.get('Access-Control-Request-Method') !== null &&
 		request.headers.get('Access-Control-Request-Headers') !== null
 	) {
+		const url = new URL(request.url);
+		const path = url.pathname;
+	
+		if (path === '/deleteAll') {
+		  // Handle CORS preflight request for "/deleteAll"
+		  return new Response(null, {
+			headers: {
+			  'Access-Control-Allow-Origin': '*',
+			  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+			  'Access-Control-Allow-Headers': '*',
+			},
+		  });
+		}
 		// Handle CORS preflight requests.
 		return new Response(null, {
 			headers: {
