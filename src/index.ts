@@ -91,12 +91,12 @@ async function handleRequest(request: Request, env: Env, ctx: ExecutionContext):
 			}
 		});
 
-	} else if (path === "/deleteAll" && request.method === "DELETE") {
+	} else if (path === "/deleteAll" && request.method === "PUT") {
 		const store = env.vue_example_store;
 		const keys = await store.list();
-		await Promise.all(keys.keys.map(async (key) => {
-			await store.delete(key.name);
-		}));
+		for (let i = 0; i < keys.keys.length; i++) {
+			await store.delete(keys.keys[i].name);
+		}
 		
 		return new Response("All keys deleted", {
 			headers: {
@@ -119,19 +119,6 @@ async function handleRequest(request: Request, env: Env, ctx: ExecutionContext):
 		request.headers.get('Access-Control-Request-Method') !== null &&
 		request.headers.get('Access-Control-Request-Headers') !== null
 	) {
-		const url = new URL(request.url);
-		const path = url.pathname;
-	
-		if (path === '/deleteAll') {
-		  // Handle CORS preflight request for "/deleteAll"
-		  return new Response(null, {
-			headers: {
-			  'Access-Control-Allow-Origin': '*',
-			  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-			  'Access-Control-Allow-Headers': '*',
-			},
-		  });
-		}
 		// Handle CORS preflight requests.
 		return new Response(null, {
 			headers: {
